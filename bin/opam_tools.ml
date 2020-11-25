@@ -16,6 +16,7 @@ module OV = Ocaml_version
 open Rresult
 open R.Infix
 open Bos
+open Opam_tools_lib
 
 let opam_root =
   match Exec.run_opam_s Cmd.(v "config" % "var" % "root") with
@@ -142,11 +143,11 @@ let create_tools_switch ov =
 
 let ocamlformat_version_l =
   lazy
-    ( match OS.File.read_lines (Fpath.v ".ocamlformat") with
+    (match OS.File.read_lines (Fpath.v ".ocamlformat") with
     | Ok f ->
         List.filter_map (Astring.String.cut ~sep:"=") f
         |> List.assoc_opt "version"
-    | Error (`Msg _) -> None )
+    | Error (`Msg _) -> None)
 
 let ocamlformat_version () = Lazy.force ocamlformat_version_l
 
@@ -190,9 +191,9 @@ let setup_local_switch ov =
       Logs.info (fun l -> l "Creating local opam switch for project.");
       Exec.run_opam Cmd.(v "switch" % "create" % "." % "--empty") >>= fun () ->
       Exec.run_opam Cmd.(v "pin" % "add" % "-ny" % ".") >>= fun () ->
-      ( match ov with
+      (match ov with
       | Some ov -> Ok ov
-      | None -> calculate_ocaml_compiler_from_project () )
+      | None -> calculate_ocaml_compiler_from_project ())
       >>= fun ov ->
       install_ocaml_in_tools ov >>= fun () -> Ok ov
   | true -> (
@@ -221,7 +222,7 @@ let setup_local_switch ov =
                 "Local switch has a different OCaml version %a than the \
                  requested %a, so reinstalling it."
                 OV.pp ov_local OV.pp ov);
-          install_ocaml_in_tools ov >>= fun () -> Ok ov_local )
+          install_ocaml_in_tools ov >>= fun () -> Ok ov_local)
 
 let copy_binaries_for_package ov dst pkg =
   let sw = tool_switch_name ov in
@@ -265,7 +266,7 @@ let opam_version () =
   | _ -> (
       OpamVersionCompare.compare v "2.0.99" |> function
       | r when r <= 0 -> Ok `Opam_20
-      | _ -> Ok `Opam_21 )
+      | _ -> Ok `Opam_21)
 
 let main ~no_deps ~pin_tools tools ov =
   setup_local_switch ov >>= fun ov ->
@@ -290,7 +291,7 @@ let main ~no_deps ~pin_tools tools ov =
         Exec.stream
           Cmd.(
             v "opam" % "install" % "-y" % "." % "--deps-only" % "--with-test"
-            % "--with-doc") )
+            % "--with-doc"))
 
 open Cmdliner
 
