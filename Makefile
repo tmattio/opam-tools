@@ -14,6 +14,10 @@ dev: ## Install development dependencies
 build: ## Build the project, including non installable libraries and executables
 	opam exec -- dune build --root .
 
+.PHONY: lock
+lock: ## Generate a lock file
+	opam lock -y .
+
 .PHONY: install
 install: all ## Install the packages on the system
 	opam install -y .
